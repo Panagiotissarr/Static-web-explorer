@@ -1,0 +1,21 @@
+{
+  "buildCommand": "bash Scripts/build.sh",
+  "rewrites": [
+    {
+      "source": "/Assets/(.*)",
+      "destination": "/Assets/$1"
+    },
+    {
+      "source": "/Files/(.*)",
+      "destination": "/Files/$1"
+    },
+    {
+      "source": "/config.sarr",
+      "destination": "/config.sarr"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/Index.html"
+    }
+  ]
+}

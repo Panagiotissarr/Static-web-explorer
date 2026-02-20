@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pana Files</title>
+  <script>
+    (function () {
+      var base = window.location.protocol === "file:" ? "" : "/";
+      var css = document.createElement("link");
+      css.rel = "stylesheet";
+      css.href = base + "Assets/CSS/style.css";
+      document.head.appendChild(css);
+    })();
+  </script>
+</head>
+<body>
+  <div class="scene">
+    <div class="frame">
+      <main class="panel" id="explorerWindow">
+        <header class="masthead drag-handle" id="windowTitlebar">
+          <button class="logo-mark" id="homeButton" type="button" aria-label="Go to root folder"></button>
+          <div class="masthead-copy">
+            <h1>Sarris.dev</h1>
+            <p>Welcome! This repository contains software selected by <a href="#" tabindex="-1" aria-hidden="true">Panagiotis</a> from multiple different websites and apps.</p>
+          </div>
+        </header>
+
+        <section class="explorer-head" aria-label="Explorer controls">
+          <div class="path" id="pathDisplay">/Files</div>
+          <label class="search-wrap" for="searchInput">
+            <span class="sr-only">Search files</span>
+            <input id="searchInput" type="search" placeholder="Type to search..." autocomplete="off">
+          </label>
+        </section>
+
+        <section class="table-wrap">
+          <table class="file-table" aria-label="File explorer">
+            <thead>
+              <tr>
+                <th scope="col">Name &darr;</th>
+                <th scope="col">Size &darr;</th>
+                <th scope="col">Date &darr;</th>
+              </tr>
+            </thead>
+            <tbody id="fileTableBody"></tbody>
+          </table>
+        </section>
+
+        <footer class="panel-footer">
+          <p><strong>Download responsibly!</strong></p>
+          <p>Report bugs &amp; corrupted files or suggest software: <a href="mailto:mail@sarris.dev">mail@sarris.dev</a></p>
+          <p>Sarris.dev &copy; 2026</p>
+        </footer>
+      </main>
+      <div class="window-layer" id="windowLayer" aria-live="polite"></div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var base = window.location.protocol === "file:" ? "" : "/";
+      var indexScript = document.createElement("script");
+      indexScript.src = base + "Assets/JS/files-data.js";
+      indexScript.onload = function () {
+        var appScript = document.createElement("script");
+        appScript.src = base + "Assets/JS/app.js";
+        document.body.appendChild(appScript);
+      };
+      document.body.appendChild(indexScript);
+    })();
+  </script>
+</body>
+</html>
