@@ -1,5 +1,5 @@
 {
-  "buildCommand": "curl -fsSL https://raw.githubusercontent.com/Panagiotissarr/Static-web-explorer/main/regen.sh | bash",
+  "buildCommand": "curl -fsSL https://raw.githubusercontent.com/Panagiotissarr/Static-web-explorer/refs/heads/main/regen.sh | bash",
   "outputDirectory": ".",
   "rewrites": [
     {
