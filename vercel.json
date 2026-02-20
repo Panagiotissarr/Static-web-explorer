@@ -1,5 +1,6 @@
 {
   "buildCommand": "bash Scripts/build.sh",
+  "outputDirectory": ".",
   "rewrites": [
     {
       "source": "/Assets/(.*)",
