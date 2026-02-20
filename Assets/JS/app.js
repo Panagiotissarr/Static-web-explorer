@@ -29,6 +29,7 @@ const AUDIO_EXTENSIONS = new Set([
 ]);
 const PDF_EXTENSIONS = new Set([".pdf"]);
 const HIDDEN_INDEX_FILES = new Set([".gitkeep", ".keep"]);
+const MOBILE_MEDIA_QUERY = window.matchMedia("(max-width: 900px), (pointer: coarse)");
 
 let iconConfig = { ...DEFAULT_ICON_CONFIG };
 
@@ -55,6 +56,7 @@ let recenterTimer = null;
 let viewerSeed = 0;
 let viewerZCounter = 40;
 const openViewerWindows = new Map();
+let isMobileUI = MOBILE_MEDIA_QUERY.matches;
 
 
 searchInput.addEventListener("input", () => {
@@ -69,6 +71,7 @@ if (homeButton) {
 
 initWindowDragging();
 initFileViewer();
+initResponsiveMode();
 
 fileTableBody.addEventListener("click", (event) => {
   const row = event.target.closest("tr[data-path]");
@@ -393,6 +396,15 @@ function openFile(filePath) {
 }
 
 function openFileInViewer(filePath) {
+  if (isMobileUI) {
+    const fileUrl = buildFileUrl(filePath);
+    const popup = window.open(fileUrl, "_blank", "noopener");
+    if (!popup) {
+      window.location.href = fileUrl;
+    }
+    return;
+  }
+
   if (!windowLayer) {
     const fileUrl = buildFileUrl(filePath);
     window.open(fileUrl, "_blank", "noopener");
@@ -488,7 +500,7 @@ function createViewerWindow(filePath) {
   });
 
   titlebar.addEventListener("pointerdown", (event) => {
-    if (window.matchMedia("(max-width: 900px)").matches) {
+    if (isMobileUI) {
       return;
     }
 
@@ -538,7 +550,7 @@ function createViewerWindow(filePath) {
   });
 
   titlebar.addEventListener("dblclick", (event) => {
-    if (window.matchMedia("(max-width: 900px)").matches) {
+    if (isMobileUI) {
       return;
     }
 
@@ -895,6 +907,39 @@ function directoryExists(path) {
   });
 }
 
+function initResponsiveMode() {
+  applyResponsiveMode(MOBILE_MEDIA_QUERY.matches);
+
+  const onResponsiveChange = () => {
+    applyResponsiveMode(MOBILE_MEDIA_QUERY.matches);
+  };
+
+  if (typeof MOBILE_MEDIA_QUERY.addEventListener === "function") {
+    MOBILE_MEDIA_QUERY.addEventListener("change", onResponsiveChange);
+  } else if (typeof MOBILE_MEDIA_QUERY.addListener === "function") {
+    MOBILE_MEDIA_QUERY.addListener(onResponsiveChange);
+  }
+}
+
+function applyResponsiveMode(nextValue) {
+  const wasMobile = isMobileUI;
+  isMobileUI = Boolean(nextValue);
+
+  if (isMobileUI) {
+    recenterWindow(false);
+    if (!wasMobile) {
+      closeAllViewerWindows(false);
+    }
+  }
+}
+
+function closeAllViewerWindows(animate) {
+  const viewers = [...openViewerWindows.values()];
+  for (const viewer of viewers) {
+    closeViewerWindow(viewer, animate);
+  }
+}
+
 function initFileViewer() {
   if (!windowLayer) {
     return;
@@ -937,7 +982,7 @@ function initWindowDragging() {
   }
 
   titlebar.addEventListener("pointerdown", (event) => {
-    if (window.matchMedia("(max-width: 900px)").matches) {
+    if (isMobileUI) {
       return;
     }
 
@@ -992,7 +1037,7 @@ function initWindowDragging() {
   titlebar.addEventListener("pointercancel", finishDrag);
 
   titlebar.addEventListener("dblclick", (event) => {
-    if (window.matchMedia("(max-width: 900px)").matches) {
+    if (isMobileUI) {
       return;
     }
 

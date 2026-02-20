@@ -556,6 +556,10 @@ a:hover {
     font-size: 0.94rem;
   }
 
+  .window-layer {
+    display: none;
+  }
+
   .file-viewer-window {
     width: min(720px, 96vw);
     min-height: min(520px, 84vh);
