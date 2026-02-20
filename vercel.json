@@ -1,7 +1,10 @@
 {
-  "buildCommand": "bash Scripts/build.sh",
   "outputDirectory": ".",
   "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
+    },
     {
       "source": "/Assets/(.*)",
       "destination": "/Assets/$1"

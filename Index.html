@@ -11,7 +11,7 @@
       css.rel = "stylesheet";
       css.href = base + "Assets/CSS/style.css";
       document.head.appendChild(css);
-    })();
+
   </script>
 </head>
 <body>
@@ -61,7 +61,11 @@
     (function () {
       var base = window.location.protocol === "file:" ? "" : "/";
       var indexScript = document.createElement("script");
-      indexScript.src = base + "Assets/JS/files-data.js";
+      indexScript.src = window.location.protocol === "file:" ? "Assets/JS/files-data.js" : "/api/regen";
+      indexScript.onerror = function () {
+        indexScript.onerror = null;
+        indexScript.src = base + "Assets/JS/files-data.js";
+      };
       indexScript.onload = function () {
         var appScript = document.createElement("script");
         appScript.src = base + "Assets/JS/app.js";
