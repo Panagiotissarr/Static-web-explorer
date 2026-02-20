@@ -35,10 +35,28 @@ function Write-FileIndex {
   }
 
   $resolvedSource = (Resolve-Path -LiteralPath $Source).Path
+  $placeholderNames = @(".gitkeep", ".keep")
+
+  # Ensure empty folders are preserved in git-based hosting by creating placeholders.
+  $directories = @(Get-ChildItem -LiteralPath $resolvedSource -Recurse -Directory -Force)
+  foreach ($directory in $directories) {
+    $children = @(Get-ChildItem -LiteralPath $directory.FullName -Force)
+    if ($children.Count -eq 0) {
+      $placeholder = Join-Path $directory.FullName ".gitkeep"
+      if (-not (Test-Path -LiteralPath $placeholder -PathType Leaf)) {
+        Set-Content -LiteralPath $placeholder -Value "" -Encoding UTF8
+      }
+    }
+  }
+
   $entries = @(Get-ChildItem -LiteralPath $resolvedSource -Recurse -Force)
   $records = @()
 
   foreach ($entry in $entries) {
+    if (-not $entry.PSIsContainer -and $placeholderNames -contains $entry.Name) {
+      continue
+    }
+
     $records += [PSCustomObject]@{
       path     = Get-RelativeUnixPath -BasePath $resolvedSource -TargetPath $entry.FullName
       type     = if ($entry.PSIsContainer) { "directory" } else { "file" }

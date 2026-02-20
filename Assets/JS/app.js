@@ -28,6 +28,7 @@ const AUDIO_EXTENSIONS = new Set([
   ".mp3", ".wav", ".ogg", ".m4a", ".aac", ".flac", ".opus"
 ]);
 const PDF_EXTENSIONS = new Set([".pdf"]);
+const HIDDEN_INDEX_FILES = new Set([".gitkeep", ".keep"]);
 
 let iconConfig = { ...DEFAULT_ICON_CONFIG };
 
@@ -212,13 +213,19 @@ function normalizeIndex(entries) {
     }
 
     const type = entry.type === "directory" ? "directory" : "file";
+    const name = normalizedPath.split("/").pop();
+
+    if (type === "file" && HIDDEN_INDEX_FILES.has(name.toLowerCase())) {
+      continue;
+    }
+
     const size = Number.isFinite(Number(entry.size)) ? Math.max(0, Number(entry.size)) : 0;
     const modifiedAt = new Date(entry.modified || 0);
     const modifiedMs = Number.isNaN(modifiedAt.getTime()) ? 0 : modifiedAt.getTime();
 
     output.push({
       path: normalizedPath,
-      name: normalizedPath.split("/").pop(),
+      name,
       type,
       size,
       modifiedMs,

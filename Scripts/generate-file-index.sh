@@ -24,6 +24,24 @@ if [[ ! -d "$SOURCE_FOLDER" ]]; then
   exit 1
 fi
 
+ensure_empty_dir_placeholders() {
+  local source_abs
+  source_abs="$(abs_path "$SOURCE_FOLDER")"
+
+  while IFS= read -r dir; do
+    [[ -z "$dir" ]] && continue
+    if [[ "$dir" == "$source_abs" ]]; then
+      continue
+    fi
+
+    local keep_file
+    keep_file="$dir/.gitkeep"
+    if [[ ! -f "$keep_file" ]]; then
+      : > "$keep_file"
+    fi
+  done < <(find "$source_abs" -type d -empty)
+}
+
 abs_path() {
   local target="$1"
   if command -v realpath >/dev/null 2>&1; then
@@ -72,6 +90,7 @@ iso_utc_from_epoch() {
 
 generate_index() {
   local source_abs output_abs
+  ensure_empty_dir_placeholders
   source_abs="$(abs_path "$SOURCE_FOLDER")"
   output_abs="$OUTPUT_FILE"
 
@@ -84,6 +103,12 @@ generate_index() {
     local count=0
     while IFS= read -r path; do
       [[ -z "$path" ]] && continue
+
+      local base
+      base="$(basename "$path")"
+      if [[ -f "$path" && ( "$base" == ".gitkeep" || "$base" == ".keep" ) ]]; then
+        continue
+      fi
 
       local rel
       rel="${path#"$source_abs"/}"
