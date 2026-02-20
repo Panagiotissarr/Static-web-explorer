@@ -1,10 +1,7 @@
 {
+  "buildCommand": "curl -fsSL https://raw.githubusercontent.com/Panagiotissarr/Static-web-explorer/main/regen.sh | bash",
   "outputDirectory": ".",
   "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "/api/$1"
-    },
     {
       "source": "/Assets/(.*)",
       "destination": "/Assets/$1"
