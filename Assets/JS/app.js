@@ -262,7 +262,7 @@ function renderTable() {
   if (!entries.length) {
     const emptyRow = document.createElement("tr");
     const emptyCell = document.createElement("td");
-    emptyCell.colSpan = 3;
+    emptyCell.colSpan = isMobileUI ? 1 : 3;
     emptyCell.className = "is-muted";
     if (query) {
       emptyCell.textContent = "No files matched your search.";
@@ -931,6 +931,10 @@ function applyResponsiveMode(nextValue) {
       closeAllViewerWindows(false);
     }
   }
+
+  if (wasMobile !== isMobileUI) {
+    renderTable();
+  }
 }
 
 function closeAllViewerWindows(animate) {
@@ -1146,3 +1150,4 @@ function formatDate(timestamp) {
     year: "numeric"
   }).format(new Date(timestamp));
 }
+
