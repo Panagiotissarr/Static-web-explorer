@@ -1013,16 +1013,19 @@ function initWindowDragging() {
       return;
     }
 
-    dragX = dragState.startX + (event.clientX - dragState.startClientX);
-    dragY = dragState.startY + (event.clientY - dragState.startClientY);
-    dragRot = clamp((event.clientX - dragState.lastClientX) * 0.14, -4, 4);
+    const nextX = dragState.startX + (event.clientX - dragState.startClientX);
+    const nextY = dragState.startY + (event.clientY - dragState.startClientY);
+    const clamped = clampDragToBounds(nextX, nextY);
+
+    dragX = clamped.x;
+    dragY = clamped.y;
+
+    const rawDeltaX = event.clientX - dragState.lastClientX;
+    const targetRot = clamped.hitEdge ? 0 : clamp(rawDeltaX * 0.08, -1.8, 1.8);
+    dragRot = (dragRot * 0.72) + (targetRot * 0.28);
+
     dragState.lastClientX = event.clientX;
     applyWindowDrag();
-
-    if (isWindowTouchingViewportEdge()) {
-      recenterWindow();
-      finishDrag(event);
-    }
   });
 
   const finishDrag = (event) => {
@@ -1052,6 +1055,18 @@ function initWindowDragging() {
     dragState = null;
     recenterWindow(true);
   });
+
+  const syncWindowState = () => {
+    constrainWindowToViewport();
+    updateWindowCornerState();
+  };
+
+  window.addEventListener("resize", syncWindowState);
+  window.addEventListener("load", syncWindowState, { once: true });
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(syncWindowState);
+  });
 }
 
 function applyWindowDrag() {
@@ -1062,6 +1077,52 @@ function applyWindowDrag() {
   explorerWindow.style.setProperty("--drag-x", `${dragX}px`);
   explorerWindow.style.setProperty("--drag-y", `${dragY}px`);
   explorerWindow.style.setProperty("--drag-rot", `${dragRot}deg`);
+  updateWindowCornerState();
+}
+
+function constrainWindowToViewport() {
+  if (!explorerWindow || isMobileUI) {
+    return;
+  }
+
+  const clamped = clampDragToBounds(dragX, dragY);
+  dragX = clamped.x;
+  dragY = clamped.y;
+
+  if (clamped.hitEdge && dragRot !== 0) {
+    dragRot = 0;
+  }
+
+  applyWindowDrag();
+}
+
+function clampDragToBounds(nextX, nextY) {
+  if (!explorerWindow) {
+    return { x: nextX, y: nextY, hitEdge: false };
+  }
+
+  const rect = explorerWindow.getBoundingClientRect();
+  const bounds = getExplorerBounds();
+  const margin = 0;
+
+  const leftAtZero = rect.left - dragX;
+  const rightAtZero = rect.right - dragX;
+  const topAtZero = rect.top - dragY;
+  const bottomAtZero = rect.bottom - dragY;
+
+  const minX = (bounds.left + margin) - leftAtZero;
+  const maxX = (bounds.right - margin) - rightAtZero;
+  const minY = (bounds.top + margin) - topAtZero;
+  const maxY = (bounds.bottom - margin) - bottomAtZero;
+
+  const x = clamp(nextX, minX, maxX);
+  const y = clamp(nextY, minY, maxY);
+
+  return {
+    x,
+    y,
+    hitEdge: x !== nextX || y !== nextY
+  };
 }
 
 function recenterWindow(smooth) {
@@ -1085,21 +1146,60 @@ function recenterWindow(smooth) {
   applyWindowDrag();
 }
 
+function updateWindowCornerState() {
+  if (!explorerWindow) {
+    return;
+  }
+
+  if (isMobileUI) {
+    explorerWindow.classList.remove("corner-flat-tl", "corner-flat-tr", "corner-flat-br", "corner-flat-bl");
+    return;
+  }
+
+  const rect = explorerWindow.getBoundingClientRect();
+  const bounds = getExplorerBounds();
+  const margin = 8;
+
+  const touchesLeft = rect.left <= bounds.left + margin;
+  const touchesTop = rect.top <= bounds.top + margin;
+  const touchesRight = rect.right >= bounds.right - margin;
+  const touchesBottom = rect.bottom >= bounds.bottom - margin;
+
+  explorerWindow.classList.toggle("corner-flat-tl", touchesTop || touchesLeft);
+  explorerWindow.classList.toggle("corner-flat-tr", touchesTop || touchesRight);
+  explorerWindow.classList.toggle("corner-flat-br", touchesBottom || touchesRight);
+  explorerWindow.classList.toggle("corner-flat-bl", touchesBottom || touchesLeft);
+}
+
 function isWindowTouchingViewportEdge() {
   if (!explorerWindow) {
     return false;
   }
 
   const rect = explorerWindow.getBoundingClientRect();
+  const bounds = getExplorerBounds();
   const margin = 8;
   return (
-    rect.left <= margin ||
-    rect.top <= margin ||
-    rect.right >= window.innerWidth - margin ||
-    rect.bottom >= window.innerHeight - margin
+    rect.left <= bounds.left + margin ||
+    rect.top <= bounds.top + margin ||
+    rect.right >= bounds.right - margin ||
+    rect.bottom >= bounds.bottom - margin
   );
 }
 
+function getExplorerBounds() {
+  const container = explorerWindow?.closest(".frame");
+  if (container) {
+    return container.getBoundingClientRect();
+  }
+
+  return {
+    left: 0,
+    top: 0,
+    right: window.innerWidth,
+    bottom: window.innerHeight
+  };
+}
 function triggerFolderTransition() {
   if (!tableWrap) {
     return;
@@ -1150,4 +1250,13 @@ function formatDate(timestamp) {
     year: "numeric"
   }).format(new Date(timestamp));
 }
+
+
+
+
+
+
+
+
+
 
